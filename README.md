@@ -11,7 +11,7 @@ Check ./example/example.go for usage.
    get from `os.Executable()`.
    This behavior is different from zap.
 
-2. The key passed to zap will be convert to **UPPERCASE.
+2. The key passed to zap will be convert to **UPPERCASE**.
    As journald seems refuse to record lowercase fields.
 
 3. `journalctl` will not show any custom fields by default.
