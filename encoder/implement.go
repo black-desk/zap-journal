@@ -24,7 +24,9 @@ func (enc *JournalEncoder) addKey(key string) {
 		enc.buf.AppendString(strings.ToUpper(enc.nss[i]))
 		enc.buf.AppendString("_")
 	}
-	enc.buf.AppendString(strings.ToUpper(key))
+	enc.buf.AppendString(
+		strings.ReplaceAll(strings.ToUpper(key), " ", "_"),
+	)
 }
 
 func (enc *JournalEncoder) addEqual() {

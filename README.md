@@ -1,5 +1,4 @@
 # zap-journal
-
 This is a extension of zap
 which implement `zapcore.Encoder` and `zapcore.WriteSyncer` of systemd-journal.
 
@@ -18,7 +17,8 @@ Check ./example/example.go for usage.
    This behavior is different from zap.
 
 2. The key passed to zap will be convert to **UPPERCASE**.
-   As journald seems refuse to record lowercase fields.
+   And all ` ` in key will be replaced with `_`.
+   As journald seems refuse to record such fields.
 
 3. `journalctl` will not show any custom fields by default.
    And it not support any format customization option to display custom fields.
