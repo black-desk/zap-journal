@@ -5,35 +5,26 @@ import (
 	"log/syslog"
 	"testing"
 
-	. "github.com/black-desk/lib/go/ginkgo-helper"
 	"github.com/black-desk/zap-journal/encoder"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"go.uber.org/zap"
-	"go.uber.org/zap/buffer"
 	"go.uber.org/zap/zapcore"
 )
 
 var _ = Describe("Systemd journal encoder for zap", func() {
-	ContextTable("create a JournalEncoder", func(constructor func() zapcore.Encoder) {
-		var (
-			enc zapcore.Encoder
-			err error
-		)
+	describeEncoder := func(constructor func() zapcore.Encoder) {
+		var enc zapcore.Encoder
 		BeforeEach(func() {
 			enc = constructor()
 		})
-		ContextTable("encode %s", func(field zapcore.Field, result []byte) {
-			var buf *buffer.Buffer
-			BeforeEach(func() {
-				buf, err = enc.EncodeEntry(zapcore.Entry{}, []zapcore.Field{field})
-				Expect(err).To(Succeed())
-			})
-			It("should produce a correct buffer", func() {
-				Expect(string(buf.Bytes())).To(Equal(string(result)))
-			})
+		DescribeTable("encodes", func(field zapcore.Field, result []byte) {
+			buf, err := enc.EncodeEntry(zapcore.Entry{}, []zapcore.Field{field})
+			Expect(err).To(Succeed())
+			defer buf.Free()
+			Expect(buf.Bytes()).To(Equal(result))
 		},
-			ContextTableEntry(zap.Int32("SOME_INT", 1), []byte(fmt.Sprintf(""+
+			Entry("an int", zap.Int32("SOME_INT", 1), []byte(fmt.Sprintf(""+
 				"PRIORITY=%d\n"+
 				"SYSLOG_FACILITY=%d\n"+
 				"SYSLOG_IDENTIFIER\n"+
@@ -41,9 +32,8 @@ var _ = Describe("Systemd journal encoder for zap", func() {
 				"\n"+
 				"SOME_INT=%d\n",
 				syslog.LOG_INFO, syslog.LOG_USER, 1,
-			))).
-				WithFmt("a int"),
-			ContextTableEntry(zap.String("SOME_STRING", "a"), []byte(fmt.Sprintf(""+
+			))),
+			Entry("a string", zap.String("SOME_STRING", "a"), []byte(fmt.Sprintf(""+
 				"PRIORITY=%d\n"+
 				"SYSLOG_FACILITY=%d\n"+
 				"SYSLOG_IDENTIFIER\n"+
@@ -53,9 +43,8 @@ var _ = Describe("Systemd journal encoder for zap", func() {
 				"\001\000\000\000\000\000\000\000"+
 				"%s\n",
 				syslog.LOG_INFO, syslog.LOG_USER, "a",
-			))).
-				WithFmt("a string"),
-			ContextTableEntry(
+			))),
+			Entry("a struct",
 				zap.Reflect("SOME_STRUCT",
 					struct {
 						Field1 int
@@ -76,8 +65,8 @@ var _ = Describe("Systemd journal encoder for zap", func() {
 					syslog.LOG_INFO, syslog.LOG_USER,
 					`{"Field1":1,"Field2":"string content"}`,
 				)),
-			).WithFmt("a struct"),
-			ContextTableEntry(
+			),
+			Entry("a map",
 				zap.Reflect("SOME_MAP",
 					map[string]string{
 						"key1": "value1",
@@ -94,8 +83,8 @@ var _ = Describe("Systemd journal encoder for zap", func() {
 					syslog.LOG_INFO, syslog.LOG_USER,
 					`{"key1":"value1","key2":"value2","key3":"value3"}`,
 				)),
-			).WithFmt("a map"),
-			ContextTableEntry(
+			),
+			Entry("an array",
 				zap.Reflect("SOME_ARRAY",
 					[]string{"string1", "string2", "string3"}),
 				[]byte(fmt.Sprintf(""+
@@ -110,22 +99,25 @@ var _ = Describe("Systemd journal encoder for zap", func() {
 					syslog.LOG_INFO, syslog.LOG_USER,
 					`["string1","string2","string3"]`,
 				)),
-			).WithFmt("a array"),
+			),
 		)
-	},
-		ContextTableEntry(func() zapcore.Encoder {
+	}
+	Context("created with New", func() {
+		describeEncoder(func() zapcore.Encoder {
 			enc, err := encoder.New(
 				encoder.WithCfg(zap.NewProductionEncoderConfig()),
 			)
 			Expect(err).To(Succeed())
 			return enc
-		}).WithFmt("zap-journal/encoder.New"),
-		ContextTableEntry(func() zapcore.Encoder {
+		})
+	})
+	Context("created with NewJournalEncoder", func() {
+		describeEncoder(func() zapcore.Encoder {
 			enc, err := encoder.NewJournalEncoder(zap.NewProductionEncoderConfig())
 			Expect(err).To(Succeed())
 			return enc
-		}).WithFmt("zap-journal/encoder.NewJournalEncoder"),
-	)
+		})
+	})
 })
 
 func TestJournal(t *testing.T) {
