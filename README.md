@@ -4,6 +4,41 @@ which implement `zapcore.Encoder` and `zapcore.WriteSyncer` of systemd-journal.
 
 Check ./example/example.go for usage.
 
+## Testing
+
+Run the tests with:
+
+```sh
+go test -count=1 -v ./...
+```
+
+Run only the integration tests with:
+
+```sh
+go test -count=1 -v -timeout=1m ./test/integration
+```
+
+`TestJournalIntegration` in `test/integration/` uses `helper.sh` to start a real
+systemd-journald in isolated user, mount, and PID namespaces. The Go test stays
+outside those namespaces, connects through a shared temporary socket directory,
+and reads the shared journal directory with journalctl. It checks logger
+initialization failures and writes structured logs through zap, the journal
+encoder, and the journal connection. Both ordinary datagrams and large entries
+sent by file descriptor are verified, including multiline field contents. It
+does not use or modify the host journal.
+
+The integration test requires `unshare`, `sh`, `mount`, `systemd-journald`, and
+`journalctl`, plus permission to create user namespaces and private mounts. It
+runs `helper.sh --check` before startup to locate the systemd tools and check
+namespace and mount support; it skips if that check fails. The script's
+`--read` mode invokes journalctl outside the namespaces. All
+subsequent startup, connection, write, and readback errors fail the test.
+Waiting is bounded only by `go test -timeout`; choose a timeout suitable for
+the local machine or CI. Closing the test process's stdin pipe tells the helper
+to stop journald and remove its temporary directory after the namespace exits,
+including when a test timeout prevents Go cleanup from running.
+Use `-v` to see skip reasons and `-count=1` to rerun without cached results.
+
 ## Thanks
 
 - [go-systemd](https://github.com/coreos/go-systemd)
