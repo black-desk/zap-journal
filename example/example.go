@@ -1,3 +1,7 @@
+// SPDX-FileCopyrightText: 2023-2026 Chen Linxuan <me@black-desk.cn>
+//
+// SPDX-License-Identifier: MIT
+
 package main
 
 import (

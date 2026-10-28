@@ -18,6 +18,10 @@
 // OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 // THE SOFTWARE.
 
+// SPDX-FileCopyrightText: 2023-2026 Chen Linxuan <me@black-desk.cn>
+//
+// SPDX-License-Identifier: MIT
+
 // NOTE(black_desk): This file is copy from zapcore
 
 // Package bufferpool houses zap's shared internal buffer pool. Third-party
