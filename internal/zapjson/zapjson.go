@@ -295,7 +295,7 @@ func (enc *JsonEncoder) addElementSeparator() {
 		return
 	}
 	switch enc.buf.Bytes()[last] {
-	case '{', '[', ':', ',', ' ', '=','\000':
+	case '{', '[', ':', ',', ' ', '=', '\000':
 		return
 	default:
 		enc.buf.AppendByte(',')

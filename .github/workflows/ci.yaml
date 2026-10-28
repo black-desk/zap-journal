@@ -1,0 +1,54 @@
+# SPDX-FileCopyrightText: 2026 Chen Linxuan <me@black-desk.cn>
+#
+# SPDX-License-Identifier: MIT
+
+name: Continuous integration
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  schedule:
+    - cron: "0 0 * * 0"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  generic:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: black-desk/workflows/generic@master
+
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: black-desk/workflows/format@master
+
+  go:
+    permissions:
+      contents: read
+      id-token: write
+    runs-on: ubuntu-latest
+    steps:
+      - name: Prepare journald integration tests
+        run: |
+          sudo sysctl -w kernel.apparmor_restrict_unprivileged_userns=0
+          sudo apt-get update
+          sudo apt-get install -y systemd util-linux
+
+      - uses: black-desk/workflows/go@master
+        env:
+          GOFLAGS: "-race -count=1 -timeout=2m -v"
+
+  pass:
+    name: pass
+    if: always()
+    needs: [generic, format, go]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: re-actors/alls-green@release/v1
+        with:
+          jobs: ${{ toJSON(needs) }}
