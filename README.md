@@ -1,3 +1,9 @@
+<!--
+SPDX-FileCopyrightText: 2023-2026 Chen Linxuan <me@black-desk.cn>
+
+SPDX-License-Identifier: MIT
+-->
+
 # zap-journal
 This is a extension of zap
 which implement `zapcore.Encoder` and `zapcore.WriteSyncer` of systemd-journal.
@@ -63,3 +69,8 @@ Use `-v` to see skip reasons and `-count=1` to rerun without cached results.
    Check [journalfmt][1] as well.
 
 [1]: https://github.com/black-desk/journalfmt
+
+## License
+
+This project is licensed under the [MIT License](LICENSES/MIT.txt).
+Code copied from zap retains Uber Technologies, Inc.'s copyright and MIT notice.
