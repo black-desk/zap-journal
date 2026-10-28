@@ -61,17 +61,7 @@ func (c *JournalConn) connect() (err error) {
 		)
 	}()
 
-	var addr *net.UnixAddr
-	addr, err = net.ResolveUnixAddr("unixgram", "")
-	if err != nil {
-		err = fmt.Errorf(
-			"failed to resolve address of local unix domain socket: %w",
-			err,
-		)
-		return
-	}
-
-	c.unixConn, err = net.ListenUnixgram("unixgram", addr)
+	c.unixConn, err = net.DialUnix("unixgram", nil, c.unixAddr)
 
 	return
 }
